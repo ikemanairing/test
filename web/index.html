@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Apparent Polar Wander vs. Continental Drift</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Apparent Polar Wander vs. Continental Drift</h1>
+      <p>
+        Explore how steady plate motion generates an apparent polar wander (APW)
+        path even when the geomagnetic pole is fixed. Adjust the plate rotation
+        parameters and the comparison plot will update instantly.
+      </p>
+    </header>
+
+    <main>
+      <section class="controls">
+        <h2>Simulation controls</h2>
+        <form id="controls-form">
+          <div class="control-group">
+            <label for="angular-velocity">Angular velocity (°/Myr)</label>
+            <input
+              id="angular-velocity"
+              name="angularVelocity"
+              type="number"
+              step="0.1"
+              value="0.4"
+            />
+          </div>
+          <div class="control-group">
+            <label for="axis-lat">Euler pole latitude (°)</label>
+            <input
+              id="axis-lat"
+              name="axisLat"
+              type="number"
+              step="1"
+              value="60"
+            />
+          </div>
+          <div class="control-group">
+            <label for="axis-lon">Euler pole longitude (°)</label>
+            <input
+              id="axis-lon"
+              name="axisLon"
+              type="number"
+              step="1"
+              value="-90"
+            />
+          </div>
+          <div class="control-group">
+            <label for="total-time">Total time (Myr)</label>
+            <input
+              id="total-time"
+              name="totalTime"
+              type="number"
+              step="5"
+              value="80"
+            />
+          </div>
+          <div class="control-group">
+            <label for="time-steps">Time steps</label>
+            <input
+              id="time-steps"
+              name="timeSteps"
+              type="number"
+              min="10"
+              max="400"
+              step="10"
+              value="120"
+            />
+          </div>
+          <div class="control-group">
+            <label for="continent-lat">Present continent latitude (°)</label>
+            <input
+              id="continent-lat"
+              name="continentLat"
+              type="number"
+              step="1"
+              value="30"
+            />
+          </div>
+          <div class="control-group">
+            <label for="continent-lon">Present continent longitude (°)</label>
+            <input
+              id="continent-lon"
+              name="continentLon"
+              type="number"
+              step="1"
+              value="-20"
+            />
+          </div>
+          <button type="submit">Update plot</button>
+        </form>
+      </section>
+
+      <section class="plots">
+        <h2>Comparative view</h2>
+        <div class="canvas-grid">
+          <figure>
+            <figcaption>Actual continental drift</figcaption>
+            <canvas id="continental-canvas" width="480" height="260"></canvas>
+          </figure>
+          <figure>
+            <figcaption>Apparent polar wander path</figcaption>
+            <canvas id="apw-canvas" width="480" height="260"></canvas>
+          </figure>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <h2>Down-sampled position summary</h2>
+        <p>
+          Coordinates are shown every few time steps so you can compare the two
+          trajectories numerically. Latitude is positive northward, longitude is
+          positive eastward.
+        </p>
+        <table id="summary-table">
+          <thead>
+            <tr>
+              <th>Time (Myr ago)</th>
+              <th>Continent lat (°)</th>
+              <th>Continent lon (°)</th>
+              <th>Apparent pole lat (°)</th>
+              <th>Apparent pole lon (°)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built with plain HTML5, CSS, and JavaScript for portability. The
+        numerical model matches the earlier Python implementation and runs
+        entirely in your browser.
+      </p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
