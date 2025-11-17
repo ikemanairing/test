@@ -1,5 +1,4 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
 const canvas = document.getElementById('globe');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -18,14 +17,15 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 0, 3);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.minDistance = 1.5;
-controls.maxDistance = 6;
-controls.enablePan = false;
-controls.target.set(0, 0, 0);
-controls.update();
+const interactionState = {
+  isDragging: false,
+  pointerId: null,
+  previous: new THREE.Vector2(),
+  dragSpeed: 0.005,
+  userRotX: 0,
+  userRotY: 0,
+  autoRot: 0,
+};
 
 const ambient = new THREE.AmbientLight(0xffffff, 0.35);
 scene.add(ambient);
@@ -155,12 +155,69 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+const zoomLimits = { min: 1.6, max: 5.5 };
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+  interactionState.isDragging = true;
+  interactionState.pointerId = event.pointerId;
+  renderer.domElement.setPointerCapture(event.pointerId);
+  interactionState.previous.set(event.clientX, event.clientY);
+});
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+  if (!interactionState.isDragging || event.pointerId !== interactionState.pointerId) {
+    return;
+  }
+  const deltaX = event.clientX - interactionState.previous.x;
+  const deltaY = event.clientY - interactionState.previous.y;
+  interactionState.userRotY += deltaX * interactionState.dragSpeed;
+  interactionState.userRotX += deltaY * interactionState.dragSpeed;
+  interactionState.userRotX = THREE.MathUtils.clamp(
+    interactionState.userRotX,
+    -Math.PI / 2 + 0.2,
+    Math.PI / 2 - 0.2
+  );
+  interactionState.previous.set(event.clientX, event.clientY);
+});
+
+const releasePointer = (event) => {
+  if (interactionState.pointerId !== null && event.pointerId === interactionState.pointerId) {
+    renderer.domElement.releasePointerCapture(interactionState.pointerId);
+  }
+  interactionState.isDragging = false;
+  interactionState.pointerId = null;
+};
+
+renderer.domElement.addEventListener('pointerup', releasePointer);
+renderer.domElement.addEventListener('pointerleave', releasePointer);
+
+renderer.domElement.addEventListener(
+  'wheel',
+  (event) => {
+    event.preventDefault();
+    const zoomDelta = event.deltaY * 0.002;
+    camera.position.z = THREE.MathUtils.clamp(
+      camera.position.z + zoomDelta,
+      zoomLimits.min,
+      zoomLimits.max
+    );
+  },
+  { passive: false }
+);
+
 const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
-  earthGroup.rotation.y += delta * 0.05;
+  if (!interactionState.isDragging) {
+    interactionState.autoRot += delta * 0.05;
+  }
+  earthGroup.rotation.set(
+    interactionState.userRotX,
+    interactionState.userRotY + interactionState.autoRot,
+    0
+  );
 
   if (!isScrubbing) {
     currentTime += delta * playbackSpeed;
@@ -182,7 +239,6 @@ function animate() {
     }
   }
 
-  controls.update();
   renderer.render(scene, camera);
 }
 
