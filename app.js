@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
 const canvas = document.getElementById('globe');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -16,6 +17,15 @@ const camera = new THREE.PerspectiveCamera(
   100
 );
 camera.position.set(0, 0, 3);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1.5;
+controls.maxDistance = 6;
+controls.enablePan = false;
+controls.target.set(0, 0, 0);
+controls.update();
 
 const ambient = new THREE.AmbientLight(0xffffff, 0.35);
 scene.add(ambient);
@@ -172,6 +182,7 @@ function animate() {
     }
   }
 
+  controls.update();
   renderer.render(scene, camera);
 }
 
