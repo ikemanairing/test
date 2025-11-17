@@ -297,9 +297,10 @@ function updateTimeLabel() {
 function buildContinentMesh(feature, color) {
   // GeoJSON 폴리곤을 ShapeGeometry로 만든 뒤 구 위로 투영한다.
   const coordinates = feature.geometry.coordinates[0];
-  const shape = polygonToShape(coordinates);
+  const shape = polygonToShape(densifyCoordinates(coordinates));
   const geometry = new THREE.ShapeGeometry(shape, 25);
   projectGeometryToSphere(geometry, 1.01);
+  applySphericalNormals(geometry);
   const material = new THREE.MeshStandardMaterial({
     color,
     roughness: 0.6,
@@ -327,6 +328,42 @@ function polygonToShape(coords) {
   return shape;
 }
 
+function densifyCoordinates(coords, maxStep = 3) {
+  // 경계선의 큰 간격을 일정 각도 이하로 잘게 분할한다.
+  if (!coords.length) {
+    return coords;
+  }
+  const result = [];
+  for (let i = 0; i < coords.length - 1; i++) {
+    const current = coords[i];
+    const next = coords[i + 1];
+    appendSegmentPoints(result, current, next, maxStep);
+  }
+  // 폴리곤이 닫혀 있지 않다면 마지막 점과 첫 점을 다시 분할한다.
+  const first = coords[0];
+  const last = coords[coords.length - 1];
+  if (first[0] !== last[0] || first[1] !== last[1]) {
+    appendSegmentPoints(result, last, first, maxStep);
+  }
+  // 마지막으로 첫 좌표를 명시적으로 추가해 Shape가 정확히 닫히도록 한다.
+  result.push([result[0][0], result[0][1]]);
+  return result;
+}
+
+function appendSegmentPoints(target, start, end, maxStep) {
+  target.push(start);
+  const lonDiff = Math.abs(end[0] - start[0]);
+  const latDiff = Math.abs(end[1] - start[1]);
+  const steps = Math.max(1, Math.ceil(Math.max(lonDiff, latDiff) / maxStep));
+  for (let step = 1; step < steps; step++) {
+    const t = step / steps;
+    target.push([
+      THREE.MathUtils.lerp(start[0], end[0], t),
+      THREE.MathUtils.lerp(start[1], end[1], t),
+    ]);
+  }
+}
+
 function projectGeometryToSphere(geometry, radius) {
   // 평면 좌표(위도/경도)를 실제 구면 좌표로 변환한다.
   const position = geometry.attributes.position;
@@ -336,7 +373,20 @@ function projectGeometryToSphere(geometry, radius) {
     const vector = latLonToVector3(lat, lon, radius);
     position.setXYZ(i, vector.x, vector.y, vector.z);
   }
-  geometry.computeVertexNormals();
+}
+
+function applySphericalNormals(geometry) {
+  // 각 정점의 위치 벡터를 그대로 노멀로 사용해 조명을 구면과 일치시킨다.
+  const position = geometry.attributes.position;
+  const normals = new Float32Array(position.count * 3);
+  const normal = new THREE.Vector3();
+  for (let i = 0; i < position.count; i++) {
+    normal.set(position.getX(i), position.getY(i), position.getZ(i)).normalize();
+    normals[i * 3] = normal.x;
+    normals[i * 3 + 1] = normal.y;
+    normals[i * 3 + 2] = normal.z;
+  }
+  geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
 }
 
 function latLonToVector3(lat, lon, radius = 1) {
