@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plate Motion vs APW</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #ffffff;
+      color: #0f172a;
+      overflow: hidden;
+    }
+
+    #globe {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .control-panel {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      width: min(360px, 90vw);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
+      z-index: 10;
+    }
+
+    .control-panel h1 {
+      font-size: 1.1rem;
+      margin: 0 0 0.75rem;
+      font-weight: 600;
+    }
+
+    .control-panel label,
+    .control-panel span {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .slider-row,
+    .mode-row,
+    .legend {
+      margin-bottom: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .slider-row input[type="range"] {
+      width: 100%;
+    }
+
+    select,
+    input[type="range"] {
+      accent-color: #4cc3ff;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(15, 23, 42, 0.4);
+    }
+
+    .scenario-label {
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #2563eb;
+    }
+
+    .labels-panel {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 0.8rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="globe"></canvas>
+
+  <section class="control-panel">
+    <h1>Paleogeographic Motion</h1>
+    <div class="slider-row">
+      <label for="timeSlider">Timeline <span id="timeLabel">0 Ma</span></label>
+      <input id="timeSlider" type="range" min="0" max="120" value="0" step="1" />
+    </div>
+    <div class="mode-row">
+      <label for="modeToggle">Scenario</label>
+      <select id="modeToggle">
+        <option value="plate">Plate motion</option>
+        <option value="apw">APW-only</option>
+      </select>
+      <span class="scenario-label" id="scenarioText">Scenario: Plate Motion</span>
+    </div>
+    <div class="legend">
+      <strong>Legend</strong>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#ff6b6b"></span>
+        Euler pole
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#ffd166"></span>
+        Geomagnetic pole track
+      </div>
+    </div>
+  </section>
+
+  <div class="labels-panel">
+    <span>Drag the globe to change the viewing angle, scroll to zoom</span>
+    <span>Toggle between scenarios to compare plate motion vs APW</span>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
