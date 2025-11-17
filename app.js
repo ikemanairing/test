@@ -4,9 +4,10 @@ const canvas = document.getElementById('globe');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0xffffff, 1);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x01040a);
+scene.background = new THREE.Color(0xf6f7fb);
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -27,8 +28,8 @@ const earthGroup = new THREE.Group();
 scene.add(earthGroup);
 
 const earthMaterial = new THREE.MeshPhongMaterial({
-  color: 0x0d1b2a,
-  emissive: 0x020b16,
+  color: 0x1a4c82,
+  emissive: 0x041429,
   map: createGridTexture(),
   shininess: 8,
 });
@@ -47,9 +48,15 @@ const timeLabel = document.getElementById('timeLabel');
 const modeToggle = document.getElementById('modeToggle');
 const scenarioText = document.getElementById('scenarioText');
 
+const minTime = Number(timeSlider.min);
+const maxTime = Number(timeSlider.max);
+const playbackSpeed = 6; // Ma per second
 let currentTime = Number(timeSlider.value);
 let currentMode = modeToggle.value;
 let continentsReady = false;
+let isScrubbing = false;
+
+updateTimeLabel();
 
 const continentColors = {
   laurentia: 0x7cd8ff,
@@ -108,9 +115,21 @@ fetch('data/continents.geojson')
   })
   .catch((err) => console.error('Failed to load continents', err));
 
+['pointerdown', 'touchstart'].forEach((evt) => {
+  timeSlider.addEventListener(evt, () => {
+    isScrubbing = true;
+  });
+});
+
+['pointerup', 'touchend', 'touchcancel', 'pointercancel'].forEach((evt) => {
+  window.addEventListener(evt, () => {
+    isScrubbing = false;
+  });
+});
+
 timeSlider.addEventListener('input', (event) => {
   currentTime = Number(event.target.value);
-  timeLabel.textContent = `${currentTime} Ma`;
+  updateTimeLabel();
 });
 
 modeToggle.addEventListener('change', (event) => {
@@ -132,6 +151,18 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
   earthGroup.rotation.y += delta * 0.05;
+
+  if (!isScrubbing) {
+    currentTime += delta * playbackSpeed;
+    if (currentTime > maxTime) {
+      currentTime = minTime;
+    }
+    if (currentTime < minTime) {
+      currentTime = maxTime;
+    }
+    timeSlider.value = String(Math.round(currentTime));
+    updateTimeLabel();
+  }
 
   if (continentsReady) {
     if (currentMode === 'plate') {
@@ -176,6 +207,10 @@ function positionApwMarker(point) {
     `Geomagnetic pole\n${point.lat.toFixed(1)}°, ${point.lon.toFixed(1)}°`
   );
   label.material.needsUpdate = true;
+}
+
+function updateTimeLabel() {
+  timeLabel.textContent = `${Math.round(currentTime)} Ma`;
 }
 
 function buildContinentMesh(feature, color) {
@@ -272,9 +307,11 @@ function buildTextTexture(text) {
   canvas.width = 256;
   canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'rgba(2,4,9,0.8)';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = 'rgba(15,23,42,0.15)';
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#0f172a';
   ctx.font = '28px Inter, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -293,9 +330,9 @@ function createGridTexture() {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#04101f';
+  ctx.fillStyle = '#052043';
   ctx.fillRect(0, 0, size, size);
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
   for (let i = 0; i <= 18; i++) {
     const y = (i / 18) * size;
