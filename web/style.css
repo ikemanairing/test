@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  --background: #f7f7f7;
+  --card: #ffffff;
+  --accent: #145ab0;
+  --grid-line: rgba(0, 0, 0, 0.2);
+  --text: #1a1a1a;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--text);
+}
+
+header,
+main,
+footer {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem;
+}
+
+header {
+  text-align: center;
+}
+
+header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.controls {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.controls form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+input[type="number"] {
+  padding: 0.45rem 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+button[type="submit"] {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0.6rem 1.2rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(20, 90, 176, 0.25);
+}
+
+.canvas-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+figure {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+figcaption {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: white;
+}
+
+.table-section {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: rgba(20, 90, 176, 0.08);
+}
+
+th,
+td {
+  padding: 0.55rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+footer {
+  text-align: center;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+@media (max-width: 600px) {
+  header,
+  main,
+  footer {
+    padding: 1.5rem 1rem;
+  }
+
+  button[type="submit"] {
+    justify-self: stretch;
+  }
+}
