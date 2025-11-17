@@ -295,37 +295,19 @@ function updateTimeLabel() {
 }
 
 function buildContinentMesh(feature, color) {
-  // GeoJSON 폴리곤을 ShapeGeometry로 만든 뒤 구 위로 투영한다.
-  const coordinates = feature.geometry.coordinates[0];
-  const shape = polygonToShape(densifyCoordinates(coordinates));
-  const geometry = new THREE.ShapeGeometry(shape, 25);
-  projectGeometryToSphere(geometry, 1.01);
-  applySphericalNormals(geometry);
-  const material = new THREE.MeshStandardMaterial({
+  // GeoJSON 경계를 구면 위 선(LineLoop)으로 투영해 Google Earth 스타일로 표현한다.
+  const coordinates = densifyCoordinates(feature.geometry.coordinates[0]);
+  const points3D = coordinates.map(([lon, lat]) =>
+    latLonToVector3(lat, lon, 1.01)
+  );
+  const geometry = new THREE.BufferGeometry().setFromPoints(points3D);
+  const material = new THREE.LineBasicMaterial({
     color,
-    roughness: 0.6,
-    metalness: 0.05,
+    linewidth: 1,
     transparent: true,
     opacity: 0.9,
   });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = false;
-  mesh.receiveShadow = false;
-  return mesh;
-}
-
-function polygonToShape(coords) {
-  const shape = new THREE.Shape();
-  coords.forEach(([lon, lat], index) => {
-    const x = lon;
-    const y = lat;
-    if (index === 0) {
-      shape.moveTo(x, y);
-    } else {
-      shape.lineTo(x, y);
-    }
-  });
-  return shape;
+  return new THREE.LineLoop(geometry, material);
 }
 
 function densifyCoordinates(coords, maxStep = 3) {
@@ -364,30 +346,6 @@ function appendSegmentPoints(target, start, end, maxStep) {
   }
 }
 
-function projectGeometryToSphere(geometry, radius) {
-  // 평면 좌표(위도/경도)를 실제 구면 좌표로 변환한다.
-  const position = geometry.attributes.position;
-  for (let i = 0; i < position.count; i++) {
-    const lon = position.getX(i);
-    const lat = position.getY(i);
-    const vector = latLonToVector3(lat, lon, radius);
-    position.setXYZ(i, vector.x, vector.y, vector.z);
-  }
-}
-
-function applySphericalNormals(geometry) {
-  // 각 정점의 위치 벡터를 그대로 노멀로 사용해 조명을 구면과 일치시킨다.
-  const position = geometry.attributes.position;
-  const normals = new Float32Array(position.count * 3);
-  const normal = new THREE.Vector3();
-  for (let i = 0; i < position.count; i++) {
-    normal.set(position.getX(i), position.getY(i), position.getZ(i)).normalize();
-    normals[i * 3] = normal.x;
-    normals[i * 3 + 1] = normal.y;
-    normals[i * 3 + 2] = normal.z;
-  }
-  geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
-}
 
 function latLonToVector3(lat, lon, radius = 1) {
   // 위도/경도를 Three.js 좌표계로 변환한다.
