@@ -256,18 +256,28 @@ animate();
 
 function updatePlateMotion(time) {
   // Plate 모드에서는 대륙 메시를 오일러 극 기준으로 회전시킨다.
+  let plateQuaternion = null;
   continents.forEach((mesh) => {
     const euler = mesh.userData.euler;
     if (!euler) {
       mesh.setRotationFromEuler(new THREE.Euler());
       return;
     }
-    const axis = latLonToVector3(euler.poleLat, euler.poleLon, 1).normalize();
-    const angle = THREE.MathUtils.degToRad(euler.rate * (time - euler.reference));
-    const quaternion = new THREE.Quaternion().setFromAxisAngle(axis, angle);
+    const quaternion = buildPlateQuaternion(euler, time);
     mesh.setRotationFromQuaternion(quaternion);
+    if (!plateQuaternion) {
+      plateQuaternion = quaternion;
+    }
   });
-  positionApwMarker(apwTrack[0]);
+  const interpolated = interpolateTrack(apwTrack, time);
+  if (plateQuaternion) {
+    const poleVector = latLonToVector3(interpolated.lat, interpolated.lon, 1.1);
+    poleVector.applyQuaternion(plateQuaternion);
+    const rotatedCoords = vector3ToLatLon(poleVector);
+    positionApwMarker(rotatedCoords, poleVector);
+  } else {
+    positionApwMarker(interpolated);
+  }
 }
 
 function updateApwMotion(time) {
@@ -277,10 +287,10 @@ function updateApwMotion(time) {
   positionApwMarker(interpolated);
 }
 
-function positionApwMarker(point) {
+function positionApwMarker(point, customPosition) {
   // 지자기 북극 메시를 특정 위도/경도로 이동시킨다.
   const radius = 1.1;
-  const position = latLonToVector3(point.lat, point.lon, radius);
+  const position = customPosition ?? latLonToVector3(point.lat, point.lon, radius);
   geomagneticPole.position.copy(position);
   const label = geomagneticPole.children[1];
   label.material.map = buildTextTexture(
@@ -355,6 +365,25 @@ function latLonToVector3(lat, lon, radius = 1) {
   const z = radius * Math.sin(phi) * Math.sin(theta);
   const y = radius * Math.cos(phi);
   return new THREE.Vector3(x, y, z);
+}
+
+function vector3ToLatLon(vector) {
+  const radius = vector.length();
+  if (radius === 0) {
+    return { lat: 0, lon: 0 };
+  }
+  const phi = Math.acos(vector.y / radius);
+  const theta = Math.atan2(vector.z, -vector.x);
+  const lat = 90 - THREE.MathUtils.radToDeg(phi);
+  let lon = THREE.MathUtils.radToDeg(theta) - 180;
+  lon = ((lon + 180) % 360) - 180;
+  return { lat, lon };
+}
+
+function buildPlateQuaternion(euler, time) {
+  const axis = latLonToVector3(euler.poleLat, euler.poleLon, 1).normalize();
+  const angle = THREE.MathUtils.degToRad(euler.rate * (time - euler.reference));
+  return new THREE.Quaternion().setFromAxisAngle(axis, angle);
 }
 
 function interpolateTrack(track, time) {
