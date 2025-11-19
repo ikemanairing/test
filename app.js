@@ -68,6 +68,8 @@ const scenarioText = document.getElementById('scenarioText');
 const modeHeadline = document.getElementById('modeHeadline');
 const modeBullets = document.getElementById('modeBullets');
 const modeNote = document.getElementById('modeNote');
+const controlPanel = document.querySelector('.control-panel');
+const panelToggle = document.getElementById('panelToggle');
 
 const minTime = Number(timeSlider.min);
 const maxTime = Number(timeSlider.max);
@@ -79,6 +81,14 @@ let isScrubbing = false;
 
 updateTimeLabel();
 updateScenarioContent(currentMode);
+
+if (panelToggle && controlPanel) {
+  panelToggle.addEventListener('click', () => {
+    const isCollapsed = controlPanel.classList.toggle('collapsed');
+    panelToggle.setAttribute('aria-expanded', String(!isCollapsed));
+    panelToggle.textContent = isCollapsed ? 'Show panel' : 'Hide panel';
+  });
+}
 
 // 여러 대륙에 사용할 색상 팔레트
 const continentColors = {
