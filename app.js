@@ -76,21 +76,30 @@ let isScrubbing = false;
 
 updateTimeLabel();
 
-// 단일 대륙에 사용할 색상 팔레트
+// 여러 대륙에 사용할 색상 팔레트
 const continentColors = {
-  paleocontinent: 0xf6a766,
+  laurentia: 0xf6a766,
+  gondwana: 0x6dc0d5,
+  siberia: 0x9fd27a,
+  southchina: 0xf29ec4,
 };
 
-// 대륙 회전을 제어할 오일러 극 파라미터
+// 대륙 회전을 제어할 오일러 극 파라미터 (Ma 단위 속도)
 const eulerParameters = {
-  paleocontinent: { poleLat: 55, poleLon: -110, rate: 0.35, reference: 0 },
+  laurentia: { poleLat: 38, poleLon: -30, rate: 0.32, reference: 0, label: 'Laurentia pole' },
+  gondwana: { poleLat: -48, poleLon: 18, rate: 0.18, reference: 0, label: 'Gondwana pole' },
+  siberia: { poleLat: 70, poleLon: 140, rate: 0.22, reference: 0, label: 'Siberia pole' },
+  southchina: { poleLat: 10, poleLon: 100, rate: 0.28, reference: 0, label: 'South China pole' },
 };
 
-const eulerPoleMarker = createPoleMarker('Euler pole', 0xff6b6b);
-eulerPoleMarker.position.copy(
-  latLonToVector3(eulerParameters.paleocontinent.poleLat, eulerParameters.paleocontinent.poleLon, 1.05)
-);
-poleGroup.add(eulerPoleMarker);
+const eulerPoleMarkers = new Map();
+Object.entries(eulerParameters).forEach(([key, params]) => {
+  const marker = createPoleMarker(params.label, 0xff6b6b);
+  marker.position.copy(latLonToVector3(params.poleLat, params.poleLon, 1.05));
+  marker.userData.key = key;
+  eulerPoleMarkers.set(key, marker);
+  poleGroup.add(marker);
+});
 
 // 지자기 북극 경로(APW track)
 const apwTrack = [
@@ -119,6 +128,15 @@ fetch('data/continents.geojson')
       mesh.userData.name = feature.properties.name;
       continentsGroup.add(mesh);
       continents.push(mesh);
+
+      // 각 대륙의 오일러 극 마커가 정의되어 있으면 표시 색상을 업데이트한다.
+      const marker = eulerPoleMarkers.get(key);
+      if (marker) {
+        marker.children[0].material.color.set(color);
+        const label = marker.children[1];
+        label.material.map = buildTextTexture(`${feature.properties.name}\nEuler pole`);
+        label.material.needsUpdate = true;
+      }
     });
     continentsReady = true;
   })
