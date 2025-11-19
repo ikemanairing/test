@@ -39,6 +39,30 @@
       z-index: 10;
     }
 
+    .panel-body {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .panel-toggle {
+      display: none;
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 0.65rem;
+      background: rgba(79, 70, 229, 0.08);
+      color: #1f2937;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+
+    .panel-toggle:focus-visible {
+      outline: 2px solid #4cc3ff;
+      outline-offset: 2px;
+    }
+
     .control-panel h1 {
       font-size: 1.1rem;
       margin: 0 0 0.75rem;
@@ -115,6 +139,8 @@
       background: #0f172a;
       color: #e2e8f0;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      max-height: 40vh;
+      overflow: auto;
     }
 
     .edu-card h2 {
@@ -159,54 +185,103 @@
       font-size: 0.8rem;
       color: #cbd5e1;
     }
+
+    @media (max-width: 640px) {
+      body {
+        overflow: hidden;
+      }
+
+      .control-panel {
+        top: auto;
+        bottom: 0.75rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(620px, 94vw);
+        max-height: 70vh;
+        overflow: hidden;
+      }
+
+      .panel-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        background: rgba(79, 70, 229, 0.12);
+      }
+
+      .panel-body {
+        max-height: 62vh;
+        overflow: auto;
+        padding-bottom: 0.25rem;
+      }
+
+      .control-panel.collapsed {
+        max-height: none;
+        padding: 0.75rem 1rem;
+        transform: translate(-50%, 55%);
+      }
+
+      .control-panel.collapsed .panel-body {
+        display: none;
+      }
+
+      .control-panel.collapsed .panel-toggle {
+        margin-bottom: 0;
+      }
+    }
   </style>
 </head>
 <body>
   <canvas id="globe"></canvas>
 
   <section class="control-panel">
-    <h1>Paleogeographic Motion</h1>
-    <div class="slider-row">
-      <label for="timeSlider">Timeline <span id="timeLabel">0 Ma</span></label>
-      <input id="timeSlider" type="range" min="0" max="120" value="0" step="1" />
-    </div>
-    <div class="mode-row">
-      <label for="modeToggle">Scenario</label>
-      <select id="modeToggle">
-        <option value="plate">Plate motion</option>
-        <option value="apw">APW-only</option>
-      </select>
-      <span class="scenario-label" id="scenarioText">Scenario: Plate Motion</span>
-    </div>
-    <div class="legend">
-      <strong>Legend</strong>
-      <div class="legend-item">
-        <span class="legend-swatch" style="background:#ff6b6b"></span>
-        Euler pole (plate rotation axis)
+    <button id="panelToggle" class="panel-toggle" type="button" aria-expanded="true">
+      Hide panel
+    </button>
+    <div class="panel-body">
+      <h1>Paleogeographic Motion</h1>
+      <div class="slider-row">
+        <label for="timeSlider">Timeline <span id="timeLabel">0 Ma</span></label>
+        <input id="timeSlider" type="range" min="0" max="120" value="0" step="1" />
       </div>
-      <div class="legend-item">
-        <span class="legend-swatch" style="background:#ffd166"></span>
-        Geomagnetic pole track (APW path)
+      <div class="mode-row">
+        <label for="modeToggle">Scenario</label>
+        <select id="modeToggle">
+          <option value="plate">Plate motion</option>
+          <option value="apw">APW-only</option>
+        </select>
+        <span class="scenario-label" id="scenarioText">Scenario: Plate Motion</span>
       </div>
-    </div>
+      <div class="legend">
+        <strong>Legend</strong>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background:#ff6b6b"></span>
+          Euler pole (plate rotation axis)
+        </div>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background:#ffd166"></span>
+          Geomagnetic pole track (APW path)
+        </div>
+      </div>
 
-    <div class="edu-card" aria-live="polite">
-      <h2>How to read the globe</h2>
-      <div class="edu-section">
-        <h3>Key ideas</h3>
-        <ul>
-          <li><strong>Apparent polar wander (APW):</strong> The recorded north pole in rocks seems to drift because plates move or the field changes with time.</li>
-          <li><strong>Euler pole-driven plate motion:</strong> A rigid plate rotates around a fixed point on the globe (its Euler pole), sweeping continents along arcs.</li>
-          <li><strong>Why compare?</strong> One mode moves the land, the other moves the magnetic pole; toggling helps separate plate motion from APW.</li>
-        </ul>
-      </div>
-      <div class="edu-section scenario-callout">
-        <h3 id="modeHeadline">Plate motion in action</h3>
-        <ul id="modeBullets">
-          <li>Continents rotate about the Euler pole, carrying paleomagnetic sites with them.</li>
-          <li>The geomagnetic pole marker stays put so you can see continental drift.</li>
-        </ul>
-        <p class="mode-note" id="modeNote">Switch to APW-only to freeze the continents and watch the pole migrate instead.</p>
+      <div class="edu-card" aria-live="polite">
+        <h2>How to read the globe</h2>
+        <div class="edu-section">
+          <h3>Key ideas</h3>
+          <ul>
+            <li><strong>Apparent polar wander (APW):</strong> The recorded north pole in rocks seems to drift because plates move or the field changes with time.</li>
+            <li><strong>Euler pole-driven plate motion:</strong> A rigid plate rotates around a fixed point on the globe (its Euler pole), sweeping continents along arcs.</li>
+            <li><strong>Why compare?</strong> One mode moves the land, the other moves the magnetic pole; toggling helps separate plate motion from APW.</li>
+          </ul>
+        </div>
+        <div class="edu-section scenario-callout">
+          <h3 id="modeHeadline">Plate motion in action</h3>
+          <ul id="modeBullets">
+            <li>Continents rotate about the Euler pole, carrying paleomagnetic sites with them.</li>
+            <li>The geomagnetic pole marker stays put so you can see continental drift.</li>
+          </ul>
+          <p class="mode-note" id="modeNote">Switch to APW-only to freeze the continents and watch the pole migrate instead.</p>
+        </div>
       </div>
     </div>
   </section>
