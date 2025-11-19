@@ -105,6 +105,60 @@
       justify-content: center;
       z-index: 10;
     }
+
+    .edu-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      padding: 0.9rem;
+      border-radius: 0.75rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .edu-card h2 {
+      margin: 0;
+      font-size: 1rem;
+      color: #f8fafc;
+    }
+
+    .edu-section h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+      color: #cbd5e1;
+    }
+
+    .edu-section ul {
+      margin: 0.25rem 0 0;
+      padding-left: 1rem;
+      display: grid;
+      gap: 0.35rem;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+    }
+
+    .edu-section strong {
+      color: #fbbf24;
+    }
+
+    .scenario-callout {
+      padding: 0.75rem;
+      border-radius: 0.65rem;
+      background: rgba(79, 70, 229, 0.14);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+    }
+
+    .scenario-callout h3 {
+      color: #c7d2fe;
+    }
+
+    .mode-note {
+      margin: 0.35rem 0 0;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
   </style>
 </head>
 <body>
@@ -128,11 +182,31 @@
       <strong>Legend</strong>
       <div class="legend-item">
         <span class="legend-swatch" style="background:#ff6b6b"></span>
-        Euler pole
+        Euler pole (plate rotation axis)
       </div>
       <div class="legend-item">
         <span class="legend-swatch" style="background:#ffd166"></span>
-        Geomagnetic pole track
+        Geomagnetic pole track (APW path)
+      </div>
+    </div>
+
+    <div class="edu-card" aria-live="polite">
+      <h2>How to read the globe</h2>
+      <div class="edu-section">
+        <h3>Key ideas</h3>
+        <ul>
+          <li><strong>Apparent polar wander (APW):</strong> The recorded north pole in rocks seems to drift because plates move or the field changes with time.</li>
+          <li><strong>Euler pole-driven plate motion:</strong> A rigid plate rotates around a fixed point on the globe (its Euler pole), sweeping continents along arcs.</li>
+          <li><strong>Why compare?</strong> One mode moves the land, the other moves the magnetic pole; toggling helps separate plate motion from APW.</li>
+        </ul>
+      </div>
+      <div class="edu-section scenario-callout">
+        <h3 id="modeHeadline">Plate motion in action</h3>
+        <ul id="modeBullets">
+          <li>Continents rotate about the Euler pole, carrying paleomagnetic sites with them.</li>
+          <li>The geomagnetic pole marker stays put so you can see continental drift.</li>
+        </ul>
+        <p class="mode-note" id="modeNote">Switch to APW-only to freeze the continents and watch the pole migrate instead.</p>
       </div>
     </div>
   </section>

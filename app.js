@@ -65,6 +65,9 @@ const timeSlider = document.getElementById('timeSlider');
 const timeLabel = document.getElementById('timeLabel');
 const modeToggle = document.getElementById('modeToggle');
 const scenarioText = document.getElementById('scenarioText');
+const modeHeadline = document.getElementById('modeHeadline');
+const modeBullets = document.getElementById('modeBullets');
+const modeNote = document.getElementById('modeNote');
 
 const minTime = Number(timeSlider.min);
 const maxTime = Number(timeSlider.max);
@@ -75,6 +78,7 @@ let continentsReady = false;
 let isScrubbing = false;
 
 updateTimeLabel();
+updateScenarioContent(currentMode);
 
 // 단일 대륙에 사용할 색상 팔레트
 const continentColors = {
@@ -146,9 +150,7 @@ timeSlider.addEventListener('input', (event) => {
 // 모드 토글을 통해 Plate/APW 시나리오를 전환한다.
 modeToggle.addEventListener('change', (event) => {
   currentMode = event.target.value;
-  scenarioText.textContent = `Scenario: ${
-    currentMode === 'plate' ? 'Plate Motion' : 'APW-only'
-  }`;
+  updateScenarioContent(currentMode);
 });
 
 window.addEventListener('resize', () => {
@@ -302,6 +304,33 @@ function positionApwMarker(point, customPosition) {
 function updateTimeLabel() {
   // UI 텍스트에 현재 시간(백만 년 전)을 표시한다.
   timeLabel.textContent = `${Math.round(currentTime)} Ma`;
+}
+
+function updateScenarioContent(mode) {
+  const isPlateMode = mode === 'plate';
+  scenarioText.textContent = `Scenario: ${isPlateMode ? 'Plate Motion' : 'APW-only'}`;
+  modeHeadline.textContent = isPlateMode ? 'Plate motion in action' : 'APW in action';
+
+  const plateBullets = [
+    'Continents rotate about the Euler pole, carrying paleomagnetic sites with them.',
+    'The geomagnetic pole marker stays put so you can see continental drift.',
+  ];
+  const apwBullets = [
+    'Continents stay fixed so you can focus on the pole path recorded in rocks.',
+    'The geomagnetic pole marker migrates along the APW track through time.',
+  ];
+
+  const activeBullets = isPlateMode ? plateBullets : apwBullets;
+  modeBullets.innerHTML = '';
+  activeBullets.forEach((text) => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    modeBullets.appendChild(li);
+  });
+
+  modeNote.textContent = isPlateMode
+    ? 'Switch to APW-only to freeze the continents and watch the pole migrate instead.'
+    : 'Switch to Plate motion to let the landmasses rotate around the Euler pole.';
 }
 
 function buildContinentMesh(feature, color) {
